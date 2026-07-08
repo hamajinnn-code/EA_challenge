@@ -1,5 +1,14 @@
 # Changelog
 
+## V1.0 rebuild - 2026-07-08
+
+- Rebuilt `M15_Alert_Indicator.mq4` as a simple V1.0 indicator.
+- Recreated arrow drawing, historical scanning, and current alert logic.
+- Unified all arrow decisions through `IsBuySignal(shift)` and `IsSellSignal(shift)`.
+- Enforced fixed M15 EMA alignment checks: 20EMA / 75EMA / 200EMA.
+- Added debug `Print()` output immediately before arrow drawing.
+- Kept SL/TP, lot calculation, and automated trading out of V1.0.
+
 ## V1.0 - 2026-07-08
 
 - Added `M15_Alert_Indicator.mq4`.
