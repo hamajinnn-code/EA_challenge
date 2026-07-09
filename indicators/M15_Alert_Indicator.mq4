@@ -1,8 +1,8 @@
 #property strict
 #property indicator_chart_window
 #property indicator_buffers 5
-#property indicator_color1 C'104,169,178'
-#property indicator_color2 C'205,139,157'
+#property indicator_color1 clrAqua
+#property indicator_color2 clrPink
 #property indicator_color3 clrDodgerBlue
 #property indicator_color4 clrGold
 #property indicator_color5 clrSilver
