@@ -1,5 +1,13 @@
 # Changelog
 
+## V1.2.1 - 2026-07-10
+
+- Performance optimization only.
+- No logic changes.
+- Reduced repeated EMA calculations in the Forex Tester indicator.
+- Added H4 200EMA trend cache for repeated H4 bars.
+- Reduced unnecessary H4 lookup work by using early continuation-style filtering.
+
 ## Forex Tester H4 filter - 2026-07-10
 
 Forex Tester version:
