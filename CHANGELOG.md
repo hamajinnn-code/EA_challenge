@@ -1,5 +1,15 @@
 # Changelog
 
+## Repository structure reorganized - 2026-07-10
+
+- Moved M15_Alert_Indicator into dedicated indicator folder.
+- Added experts directory for future EA development.
+- Added include directory for shared logic.
+- Added backtest directory.
+- Added documentation subdirectories.
+- Added tools and images directories.
+- Preserved existing releases.
+
 ## Repository renamed - 2026-07-10
 
 - Repository renamed from `EA_challenge` to `Project-REI`.
