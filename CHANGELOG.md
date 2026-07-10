@@ -1,5 +1,14 @@
 # Changelog
 
+## Forex Tester M15 V1.1 logic check - 2026-07-10
+
+- Ported M15-only V1.1-style arrow logic into `M15_Alert_Indicator_FT.mq4`.
+- Kept the three EMA display buffers for Forex Tester visibility checks.
+- Added 20EMA / 75EMA slope checks.
+- Added 20EMA or 75EMA touch checks with bullish / bearish candle confirmation.
+- Added one-arrow-per-pullback / retracement suppression.
+- Kept H4, London session, news, alerts, comments, and object drawing out of the FT version.
+
 ## Forex Tester display verification - 2026-07-10
 
 Added Forex Tester display verification indicator:
