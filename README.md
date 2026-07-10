@@ -2,10 +2,20 @@
 
 Project REI is a long-term algorithmic trading development project for MT4 / MQL4 indicators, Expert Advisors, trading logic, backtesting, and documentation.
 
+Project REI repository structure has been reorganized to support long-term development of:
+
+- MT4 indicators
+- Expert Advisors
+- Shared include files
+- Risk management logic
+- Backtest records
+- Documentation
+- Release management
+
 ## Indicator
 
 - Name: `M15_Alert_Indicator`
-- File: `indicators/M15_Alert_Indicator.mq4`
+- File: `indicators/M15_Alert_Indicator/M15_Alert_Indicator.mq4`
 - Platform: MetaTrader 4
 - Main timeframe: M15
 - Higher timeframe: H4
@@ -68,16 +78,35 @@ Branch strategy:
 
 ```text
 Project-REI/
+|- indicators/
+|  `- M15_Alert_Indicator/
+|     `- M15_Alert_Indicator.mq4
+|- experts/
+|  `- Project_REI_EA/
+|- include/
+|  |- Common/
+|  |- Indicators/
+|  `- RiskManagement/
+|- docs/
+|  |- Strategy/
+|  |- Development/
+|  |- Backtest/
+|  |- ReleaseNotes/
+|  `- MeetingNotes/
+|- backtest/
+|  |- Screenshots/
+|  |- Reports/
+|  |- CSV/
+|  `- Statistics/
+|- releases/
+|  |- V1.0/
+|  |- V1.1/
+|  `- V1.2/
+|- tools/
+|- images/
 |- README.md
 |- CHANGELOG.md
-|- .gitignore
-|- docs/
-|- indicators/
-|  `- M15_Alert_Indicator.mq4
-`- releases/
-   |- V1.0/
-   |- V1.1/
-   `- V1.2/
+`- .gitignore
 ```
 
 ## Future Plan
