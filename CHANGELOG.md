@@ -1,5 +1,46 @@
 # Changelog
 
+## V1.3 - 2026-07-12
+
+- Added optional M15 bullish and bearish engulfing filters.
+- Added confirmed ZigZag swing detection.
+- Added reference SL line.
+- Added reference TP line using default RR 1:2.
+- Added protection against unconfirmed ZigZag points.
+- Added latest-signal-only reference line management.
+- No automated trading functions added.
+- Existing V1.2 entry logic preserved.
+
+## V1.2.3 - 2026-07-11
+
+- Added signal-time price position check against H4 200EMA.
+- Preserved confirmed H4 trend filter.
+- Prevented BUY signals below H4 200EMA and SELL signals above H4 200EMA.
+- No other logic changes.
+
+## V1.2.2 - 2026-07-10
+
+- Added incremental recalculation for Forex Tester.
+- Added `ShowEMALines` option.
+- Reduced repeated full historical scans.
+- No logic changes.
+
+## V1.2.1 revised - 2026-07-10
+
+- Removed repeated `iMA()` calls from slope functions.
+- Added `H4TrendCache` for the Forex Tester indicator.
+- Reduced repeated `iBarShift()` calls by reusing the current H4 block.
+- Optimized the FT indicator loop.
+- No logic changes.
+
+## V1.2.1 - 2026-07-10
+
+- Performance optimization only.
+- No logic changes.
+- Reduced repeated EMA calculations in the Forex Tester indicator.
+- Added H4 200EMA trend cache for repeated H4 bars.
+- Reduced unnecessary H4 lookup work by using early continuation-style filtering.
+
 ## Forex Tester H4 filter - 2026-07-10
 
 Forex Tester version:
