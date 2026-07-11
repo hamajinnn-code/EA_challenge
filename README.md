@@ -19,7 +19,15 @@ Project REI repository structure has been reorganized to support long-term devel
 - Platform: MetaTrader 4
 - Main timeframe: M15
 - Higher timeframe: H4
-- Current version: V1.2 revised
+- Current version: V1.3
+
+## V1.3 Features
+
+- Optional M15 engulfing candle filter
+- Reference stop-loss based on the previous confirmed ZigZag swing
+- Reference take-profit based on configurable risk/reward ratio
+- Reference SL/TP lines are for discretionary support only
+- Final EA exit rules will be determined after live and prop evaluation
 
 ## V1.2 Revised Scope
 
