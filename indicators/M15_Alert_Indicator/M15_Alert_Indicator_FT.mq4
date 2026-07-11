@@ -22,10 +22,13 @@ double Ema200Buffer[];
 double BuyArrowBuffer[];
 double SellArrowBuffer[];
 int H4TrendCache[];
+double H4SignalEma200Cache[];
 
 int CachedH4Shift = -1;
 bool CachedH4BuyTrend = false;
 bool CachedH4SellTrend = false;
+int CachedSignalH4Shift = -1;
+double CachedSignalH4Ema200 = 0.0;
 
 int OnInit()
 {
@@ -98,11 +101,15 @@ int OnCalculate(const int rates_total,
    bool sellSignalAlreadyShown = false;
 
    ArrayResize(H4TrendCache, rates_total);
+   ArrayResize(H4SignalEma200Cache, rates_total);
    ArraySetAsSeries(H4TrendCache, true);
+   ArraySetAsSeries(H4SignalEma200Cache, true);
 
    CachedH4Shift = -1;
    CachedH4BuyTrend = false;
    CachedH4SellTrend = false;
+   CachedSignalH4Shift = -1;
+   CachedSignalH4Ema200 = 0.0;
 
    for(int e = emaRecalcLimit; e >= 0; e--)
    {
@@ -141,9 +148,15 @@ int OnCalculate(const int rates_total,
       }
 
       if(sourceH4Shift < 0)
+      {
          H4TrendCache[h] = 0;
+         H4SignalEma200Cache[h] = 0.0;
+      }
       else
+      {
          H4TrendCache[h] = GetCachedH4Trend(sourceH4Shift + 1, h4Bars);
+         H4SignalEma200Cache[h] = GetCachedSignalH4Ema200(sourceH4Shift, h4Bars);
+      }
    }
 
    for(int i = scanLimit; i >= 1; i--)
@@ -157,6 +170,9 @@ int OnCalculate(const int rates_total,
 
       bool h4Buy = (H4TrendCache[i] == 1);
       bool h4Sell = (H4TrendCache[i] == -1);
+      double signalH4Ema200 = H4SignalEma200Cache[i];
+      bool h4PriceBuy = (signalH4Ema200 > 0.0 && Close[i] > signalH4Ema200);
+      bool h4PriceSell = (signalH4Ema200 > 0.0 && Close[i] < signalH4Ema200);
       bool buyAlignment = IsBuyAlignment(i);
       bool sellAlignment = IsSellAlignment(i);
       bool buySlopeUp = IsBuySlopeUp(i, rates_total);
@@ -177,6 +193,7 @@ int OnCalculate(const int rates_total,
 
       if(!buySignalAlreadyShown &&
          h4Buy &&
+         h4PriceBuy &&
          buyAlignment &&
          buySlopeUp &&
          buyTouch &&
@@ -189,6 +206,7 @@ int OnCalculate(const int rates_total,
 
       if(!sellSignalAlreadyShown &&
          h4Sell &&
+         h4PriceSell &&
          sellAlignment &&
          sellSlopeDown &&
          sellTouch &&
@@ -290,4 +308,21 @@ int GetCachedH4Trend(int h4Shift, int h4Bars)
    if(CachedH4SellTrend)
       return(-1);
    return(0);
+}
+
+double GetCachedSignalH4Ema200(int h4Shift, int h4Bars)
+{
+   if(h4Shift == CachedSignalH4Shift)
+      return(CachedSignalH4Ema200);
+
+   CachedSignalH4Shift = h4Shift;
+   CachedSignalH4Ema200 = 0.0;
+
+   if(h4Shift < 0)
+      return(0.0);
+   if(h4Bars <= h4Shift + 200)
+      return(0.0);
+
+   CachedSignalH4Ema200 = iMA(NULL, PERIOD_H4, 200, 0, MODE_EMA, PRICE_CLOSE, h4Shift);
+   return(CachedSignalH4Ema200);
 }
