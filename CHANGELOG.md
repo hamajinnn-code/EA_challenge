@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 1.3 implementation - 2026-07-14
+
+- Added optional M15 bullish engulfing filter
+- Added optional M15 bearish engulfing filter
+- Added MT4 reference SL based on confirmed ZigZag swing
+- Added MT4 reference TP based on configurable risk/reward ratio
+- Added FT-compatible internal swing detection
+- Added FT-compatible SL/TP indicator buffers
+- Preserved Version 1.2 revised entry logic
+- Preserved FT incremental calculation
+- No EA or automated trading functions added
+
 ## V1.3 FT compatibility revision - 2026-07-12
 
 - Removed chart object based SL/TP drawing.
