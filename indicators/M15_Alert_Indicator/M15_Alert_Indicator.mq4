@@ -65,6 +65,8 @@ input int    ReferenceLineWidth = 1;
 input int    ReferenceLineStyle = STYLE_DASH;
 input bool   ShowReferenceEntryLine = false;
 input bool   EnableSLTPDebugLog = false;
+input bool   EnableSignalDebugLog = false;
+input int    RecalculateBars = 300;
 
 double BuyArrowBuffer[];
 double SellArrowBuffer[];
@@ -79,6 +81,9 @@ bool g_sellSignalAlreadyShown = false;
 int g_lastScannedBars = 0;
 int g_lastBuyArrowCount = 0;
 int g_lastSellArrowCount = 0;
+datetime g_lastReferenceSignalTime = 0;
+bool g_lastReferenceSignalIsBuy = false;
+bool g_referenceLinesDrawn = false;
 
 int GetScanBars(int rates_total)
 {
@@ -867,11 +872,43 @@ void DrawReferenceLine(string suffix,
    ObjectSetString(0, name, OBJPROP_TEXT, labelText);
 }
 
-void UpdateReferenceSLTPLines(int signalShift, bool isBuy)
+void ResetReferenceLineState()
 {
-   if(!EnableReferenceSLTP)
+   g_lastReferenceSignalTime = 0;
+   g_lastReferenceSignalIsBuy = false;
+   g_referenceLinesDrawn = false;
+}
+
+void SyncReferenceLinesDisabled()
+{
+   if(!EnableReferenceSLTP && g_referenceLinesDrawn)
    {
       DeleteReferenceLines();
+      ResetReferenceLineState();
+   }
+}
+
+void UpdateReferenceSLTPLines(int signalShift, bool isBuy)
+{
+   if(signalShift <= 0)
+      return;
+
+   if(!EnableReferenceSLTP)
+   {
+      if(g_referenceLinesDrawn)
+      {
+         DeleteReferenceLines();
+         ResetReferenceLineState();
+      }
+      return;
+   }
+
+   datetime signalTime = Time[signalShift];
+
+   if(g_referenceLinesDrawn &&
+      signalTime == g_lastReferenceSignalTime &&
+      isBuy == g_lastReferenceSignalIsBuy)
+   {
       return;
    }
 
@@ -886,6 +923,8 @@ void UpdateReferenceSLTPLines(int signalShift, bool isBuy)
       ok = CalculateSellReferenceSLTP(signalShift, entryPrice, stopLoss, takeProfit);
 
    DeleteReferenceLines();
+   ResetReferenceLineState();
+
    if(!ok)
       return;
 
@@ -894,6 +933,10 @@ void UpdateReferenceSLTPLines(int signalShift, bool isBuy)
 
    if(ShowReferenceEntryLine)
       DrawReferenceLine("ENTRY", signalShift, entryPrice, clrSilver, "Reference Entry");
+
+   g_lastReferenceSignalTime = signalTime;
+   g_lastReferenceSignalIsBuy = isBuy;
+   g_referenceLinesDrawn = true;
 }
 
 void PrintReferenceSLTPDebug(string direction,
@@ -992,12 +1035,19 @@ void PrintSellBufferDebug(int shift)
 //+------------------------------------------------------------------+
 //| Buffer drawing                                                     |
 //+------------------------------------------------------------------+
-void UpdateArrowBuffers(int rates_total)
+void UpdateArrowBuffers(int rates_total, bool fullScan, int &latestSignalShift, bool &latestSignalIsBuy)
 {
    int availableM15Bars = iBars(NULL, PERIOD_M15);
-   int clearLimit = MathMin(rates_total - 1, availableM15Bars - 1);
-   clearLimit = MathMin(clearLimit, 20000);
    int scanBars = GetScanBars(rates_total);
+
+   if(!fullScan)
+      scanBars = MathMin(scanBars, MathMax(RecalculateBars, 10));
+
+   int clearLimit = MathMin(scanBars, availableM15Bars - 1);
+   clearLimit = MathMin(clearLimit, rates_total - 1);
+
+   latestSignalShift = -1;
+   latestSignalIsBuy = false;
 
    if(clearLimit >= 0)
    {
@@ -1014,15 +1064,18 @@ void UpdateArrowBuffers(int rates_total)
 
    if(scanBars < 1)
    {
-      g_buySignalAlreadyShown = false;
-      g_sellSignalAlreadyShown = false;
+      if(fullScan)
+      {
+         g_buySignalAlreadyShown = false;
+         g_sellSignalAlreadyShown = false;
+      }
       return;
    }
 
    double arrowOffset = ArrowOffsetPips * PipPoint();
    int start = scanBars;
-   bool buySignalAlreadyShown = false;
-   bool sellSignalAlreadyShown = false;
+   bool buySignalAlreadyShown = fullScan ? false : g_buySignalAlreadyShown;
+   bool sellSignalAlreadyShown = fullScan ? false : g_sellSignalAlreadyShown;
 
    // Scan old candles to new candles so the first touch after alignment is detected correctly.
    for(int i = start; i >= 1; i--)
@@ -1047,8 +1100,15 @@ void UpdateArrowBuffers(int rates_total)
          {
             BuyArrowBuffer[i] = Low[i] - arrowOffset;
             g_lastBuyArrowCount++;
-            PrintBuyBufferDebug(i);
-            UpdateReferenceSLTPLines(i, true);
+
+            if(EnableSignalDebugLog)
+               PrintBuyBufferDebug(i);
+
+            if(latestSignalShift < 0 || i < latestSignalShift)
+            {
+               latestSignalShift = i;
+               latestSignalIsBuy = true;
+            }
          }
 
          buySignalAlreadyShown = true;
@@ -1062,8 +1122,15 @@ void UpdateArrowBuffers(int rates_total)
          {
             SellArrowBuffer[i] = High[i] + arrowOffset;
             g_lastSellArrowCount++;
-            PrintSellBufferDebug(i);
-            UpdateReferenceSLTPLines(i, false);
+
+            if(EnableSignalDebugLog)
+               PrintSellBufferDebug(i);
+
+            if(latestSignalShift < 0 || i < latestSignalShift)
+            {
+               latestSignalShift = i;
+               latestSignalIsBuy = false;
+            }
          }
 
          sellSignalAlreadyShown = true;
@@ -1078,10 +1145,10 @@ void UpdateArrowBuffers(int rates_total)
    BuyArrowBuffer[0] = EMPTY_VALUE;
    SellArrowBuffer[0] = EMPTY_VALUE;
 }
-
-void UpdateDebugEMALines(int rates_total)
+void UpdateDebugEMALines(int rates_total, bool fullScan)
 {
-   int maxShift = GetScanBars(rates_total);
+   int maxShift = fullScan ? GetScanBars(rates_total) : 2;
+   maxShift = MathMin(maxShift, rates_total - 1);
 
    if(maxShift < 0)
       return;
@@ -1102,7 +1169,6 @@ void UpdateDebugEMALines(int rates_total)
       }
    }
 }
-
 void UpdateStatusComment()
 {
    Comment("M15_Alert_Indicator V1.3",
@@ -1243,6 +1309,7 @@ int OnInit()
 
    DeleteLegacyArrowObjects();
    DeleteReferenceLines();
+   ResetReferenceLineState();
 
    return(INIT_SUCCEEDED);
 }
@@ -1265,9 +1332,27 @@ int OnCalculate(const int rates_total,
       return(rates_total);
    }
 
-   UpdateDebugEMALines(rates_total);
-   UpdateArrowBuffers(rates_total);
-   UpdateStatusComment();
+   static datetime lastCalculatedBarTime = 0;
+   datetime currentBarTime = iTime(NULL, PERIOD_M15, 0);
+   bool firstCalculation = (prev_calculated == 0);
+   bool newBar = (currentBarTime != lastCalculatedBarTime);
+
+   if(firstCalculation || newBar)
+   {
+      int latestSignalShift = -1;
+      bool latestSignalIsBuy = false;
+
+      UpdateDebugEMALines(rates_total, firstCalculation);
+      UpdateArrowBuffers(rates_total, firstCalculation, latestSignalShift, latestSignalIsBuy);
+      SyncReferenceLinesDisabled();
+
+      if(latestSignalShift > 0)
+         UpdateReferenceSLTPLines(latestSignalShift, latestSignalIsBuy);
+
+      UpdateStatusComment();
+      lastCalculatedBarTime = currentBarTime;
+   }
+
    CheckCurrentAlert();
 
    return(rates_total);
@@ -1276,5 +1361,6 @@ int OnCalculate(const int rates_total,
 void OnDeinit(const int reason)
 {
    DeleteReferenceLines();
+   ResetReferenceLineState();
    Comment("");
 }

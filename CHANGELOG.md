@@ -179,3 +179,12 @@ Added Forex Tester display verification indicator:
 - Added current-candle alert logic.
 - Added confirmed-candle arrow drawing.
 - Excluded SL/TP lines, lot calculation, and automated trading from V1.0.
+## V1.3 performance revision
+
+- Added incremental MT4 calculation
+- Removed repeated full historical scans on every tick
+- Moved reference SL/TP calculation outside the historical signal loop
+- Added latest-signal-only ZigZag calculation
+- Prevented repeated reference object recreation
+- Disabled signal debug logs by default
+- Preserved all V1.3 trading logic
