@@ -194,3 +194,9 @@ Added Forex Tester display verification indicator:
 - Excluded shallow 20EMA rebounds from BUY and SELL signal candidates.
 - Applied the same 75EMA-only touch rule to current-candle alerts.
 - Preserved EMA alignment, EMA slope, engulfing filter, London/news filters, reference SL/TP, ZigZag, RR 1:2, arrow drawing, and performance optimization logic.
+
+## V1.3 FT EMA touch revision
+
+- Updated the Forex Tester indicator to use 75EMA-only pullback touch logic.
+- Removed 20EMA touch as a BUY and SELL signal trigger in the FT version.
+- Aligned FT entry touch logic with the MT4 V1.3 EMA touch revision.
